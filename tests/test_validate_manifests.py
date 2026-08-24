@@ -53,10 +53,16 @@ class ManifestValidationTests(unittest.TestCase):
             self.assertTrue(any("missing url" in error for error in errors))
 
     def test_reports_mismatched_download_lists(self):
-        manifest = VALID | {"url": ["one", "two"], "hash": ["abc"]}
+        manifest = VALID | {"url": ["https://example.com/a.zip", "https://example.com/b.zip"], "hash": ["abc"]}
         with tempfile.TemporaryDirectory() as directory:
             errors = validate_manifest(self.write_manifest(Path(directory), manifest))
             self.assertTrue(any("equal length" in error for error in errors))
+
+    def test_reports_invalid_url_scheme(self):
+        manifest = VALID | {"url": "ftp://example.com/tool.zip"}
+        with tempfile.TemporaryDirectory() as directory:
+            errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+            self.assertTrue(any("valid http/https URL" in error for error in errors))
 
     def test_empty_bucket_is_valid_during_repository_bootstrap(self):
         with tempfile.TemporaryDirectory() as directory:
