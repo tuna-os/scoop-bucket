@@ -11,7 +11,8 @@ INSTALL_FIELDS = ("bin", "shortcuts", "installer")
 
 
 def _is_valid_url(url: str) -> bool:
-    return isinstance(url, str) and (url.startswith("https://") or url.startswith("http://"))
+    return isinstance(url, str) and url.startswith("https://")
+
 
 
 def validate_download(download: dict, location: str) -> list[str]:
@@ -24,11 +25,12 @@ def validate_download(download: dict, location: str) -> list[str]:
         return [f"{location}: missing hash"]
     if isinstance(url, list):
         if not url or not all(_is_valid_url(item) for item in url):
-            errors.append(f"{location}: url must contain valid http/https URLs")
+            errors.append(f"{location}: url must contain valid https URLs")
         if not isinstance(digest, list) or len(url) != len(digest):
             errors.append(f"{location}: url and hash lists must have equal length")
     elif not _is_valid_url(url):
-        errors.append(f"{location}: url must be a valid http/https URL or list")
+        errors.append(f"{location}: url must be a valid https URL or list")
+
     elif not isinstance(digest, str) or not digest:
         errors.append(f"{location}: hash must be a non-empty string")
     return errors
