@@ -62,7 +62,14 @@ class ManifestValidationTests(unittest.TestCase):
         manifest = VALID | {"url": "ftp://example.com/tool.zip"}
         with tempfile.TemporaryDirectory() as directory:
             errors = validate_manifest(self.write_manifest(Path(directory), manifest))
-            self.assertTrue(any("valid http/https URL" in error for error in errors))
+            self.assertTrue(any("valid https URL" in error for error in errors))
+
+    def test_reports_http_scheme_rejected(self):
+        manifest = VALID | {"url": "http://example.com/tool.zip"}
+        with tempfile.TemporaryDirectory() as directory:
+            errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+            self.assertTrue(any("valid https URL" in error for error in errors))
+
 
     def test_empty_bucket_is_valid_during_repository_bootstrap(self):
         with tempfile.TemporaryDirectory() as directory:
