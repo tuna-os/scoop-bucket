@@ -24,3 +24,6 @@ repository root:
 python3 tests/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for manifest requirements, contribution
+scope, and release-pipeline ownership guidance.
