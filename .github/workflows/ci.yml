@@ -1,0 +1,36 @@
+name: CI
+
+# The bucket's manifest contract lived only in a local test suite nobody was
+# obliged to run (#20, #24, #5). This runs both halves on every change: the
+# validator against whatever is in bucket/, and the validator's own unit tests.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate manifests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Both commands are the ones CONTRIBUTING.md asks contributors to run,
+      # standard library only — no pip install step by design.
+      - name: Validate published manifests
+        run: python3 tests/validate_manifests.py
+
+      - name: Test the validator
+        run: python3 -m unittest discover -s tests -v

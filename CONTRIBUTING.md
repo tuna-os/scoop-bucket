@@ -16,7 +16,7 @@ here, because the next release may overwrite those changes.
 
 Each manifest must include non-empty `version`, `description`, `homepage`, and
 `license` fields, plus at least one installation entry (`bin`, `shortcuts`, or
-`installer`). Downloads must use HTTP or HTTPS URLs and include hashes. When a
+`installer`). Downloads must use HTTPS URLs and include hashes. When a
 manifest uses architecture-specific downloads, every architecture entry must
 provide its own URL and hash.
 
