@@ -8,11 +8,30 @@ from pathlib import Path
 
 REQUIRED_FIELDS = ("version", "description", "homepage", "license")
 INSTALL_FIELDS = ("bin", "shortcuts", "installer")
+# Scoop verifies a download with the algorithm named by the hash prefix, and
+# with SHA-256 when the digest carries no prefix. Only the two collision-
+# resistant algorithms are accepted here: a manifest pinned with md5: or sha1:
+# would install under an algorithm an attacker can forge a collision for.
+HASH_DIGEST_LENGTHS = {"sha256": 64, "sha512": 128}
+HEX_DIGITS = set("0123456789abcdefABCDEF")
 
 
 def _is_valid_url(url: str) -> bool:
     return isinstance(url, str) and url.startswith("https://")
 
+
+def _hash_error(digest: object, location: str) -> str | None:
+    if not isinstance(digest, str) or not digest:
+        return f"{location}: hash must be a non-empty string"
+    algorithm, separator, body = digest.rpartition(":")
+    algorithm = algorithm.lower() if separator else "sha256"
+    length = HASH_DIGEST_LENGTHS.get(algorithm)
+    if length is None:
+        accepted = ", ".join(sorted(HASH_DIGEST_LENGTHS))
+        return f"{location}: hash algorithm '{algorithm}' is not accepted; use {accepted}"
+    if len(body) != length or not set(body) <= HEX_DIGITS:
+        return f"{location}: hash must be {length} hex characters for {algorithm}"
+    return None
 
 
 def validate_download(download: dict, location: str) -> list[str]:
@@ -28,11 +47,20 @@ def validate_download(download: dict, location: str) -> list[str]:
             errors.append(f"{location}: url must contain valid https URLs")
         if not isinstance(digest, list) or len(url) != len(digest):
             errors.append(f"{location}: url and hash lists must have equal length")
-    elif not _is_valid_url(url):
+        else:
+            errors.extend(
+                error
+                for index, item in enumerate(digest)
+                if (error := _hash_error(item, f"{location} hash[{index}]"))
+            )
+        return errors
+    if not _is_valid_url(url):
         errors.append(f"{location}: url must be a valid https URL or list")
-
-    elif not isinstance(digest, str) or not digest:
-        errors.append(f"{location}: hash must be a non-empty string")
+    # Checked even when the URL is already rejected: both halves of the
+    # integrity contract should be reported in one run, not one per fix.
+    error = _hash_error(digest, location)
+    if error:
+        errors.append(error)
     return errors
 
 
