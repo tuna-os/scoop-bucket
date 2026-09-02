@@ -79,7 +79,7 @@ class ManifestValidationTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as directory:
             errors = validate_manifest(self.write_manifest(Path(directory), manifest))
-            self.assertTrue(any("url must contain valid http/https URLs" in error for error in errors))
+            self.assertTrue(any("url must contain valid https URLs" in error for error in errors))
 
     def test_reports_invalid_url_scheme(self):
         manifest = VALID | {"url": "ftp://example.com/tool.zip"}
