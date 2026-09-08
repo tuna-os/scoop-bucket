@@ -29,7 +29,7 @@ third-party projects or unpublished artifacts.
 Run both checks from the repository root:
 
 ```console
-python3 tests/validate_manifests.py
+python3 scripts/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
 
