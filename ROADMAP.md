@@ -1,6 +1,6 @@
 # Scoop Bucket Roadmap
 
-**Last updated:** 2026-08-28  
+**Last updated:** 2026-09-16  
 **Owner:** tuna-os  
 **Mission:** Give Windows users a verified, current package-manager path to
 TunaOS command-line tools.
