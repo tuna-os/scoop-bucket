@@ -8,6 +8,7 @@ from pathlib import Path
 
 REQUIRED_FIELDS = ("version", "description", "homepage", "license")
 INSTALL_FIELDS = ("bin", "shortcuts", "installer")
+SUPPORTED_ARCHITECTURES = frozenset({"32bit", "64bit", "arm64"})
 # Scoop verifies a download with the algorithm named by the hash prefix, and
 # with SHA-256 when the digest carries no prefix. Only the two collision-
 # resistant algorithms are accepted here: a manifest pinned with md5: or sha1:
@@ -88,6 +89,11 @@ def validate_manifest(path: Path) -> list[str]:
         errors.append(f"{path}: architecture must be a non-empty object")
     else:
         for name, download in architecture.items():
+            if name not in SUPPORTED_ARCHITECTURES:
+                accepted = ", ".join(sorted(SUPPORTED_ARCHITECTURES))
+                errors.append(
+                    f"{path} architecture.{name}: unsupported architecture; use {accepted}"
+                )
             if not isinstance(download, dict):
                 errors.append(f"{path} architecture.{name}: must be an object")
             else:
