@@ -34,8 +34,8 @@ third-party projects or unpublished artifacts.
 Run both checks from the repository root:
 
 ```console
-python3 tests/validate_manifests.py
-python3 -m unittest discover -s tests -v
+python3 scripts/validate_manifests.py
+PYTHONPATH=scripts python3 -m unittest discover -s tests -v
 ```
 
 The first command validates every JSON file in `bucket/`; the second tests the

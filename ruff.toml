@@ -1,5 +1,5 @@
-# Ruff configuration for the tests/ helper scripts and their unit tests.
-# See CONTRIBUTING.md for how to run this locally.
+# Ruff configuration for the manifest validator (scripts/) and its unit
+# tests (tests/). See CONTRIBUTING.md for how to run this locally.
 target-version = "py312"
 line-length = 100
 

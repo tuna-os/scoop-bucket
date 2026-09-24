@@ -9,7 +9,7 @@ Human docs: [`README.md`](README.md), [`CONTRIBUTING.md`](CONTRIBUTING.md)
 ## The bucket is empty, and that makes CI vacuous
 
 There is **no `bucket/` directory** — not one manifest has been published yet.
-`main()` in `tests/validate_manifests.py` treats that as success:
+`main()` in `scripts/validate_manifests.py` treats that as success:
 
 ```python
 manifests = sorted(bucket.glob("*.json")) if bucket.is_dir() else []
@@ -41,9 +41,13 @@ v0.10.6.
 
 ## Validator conventions worth keeping
 
-- **It lives in `tests/`** (`tests/validate_manifests.py`), which is unusual —
-  it is both the tool CI runs against `bucket/` and the subject of
-  `tests/test_validate_manifests.py`.
+- **Canonical copy lives in `scripts/validate_manifests.py`.**
+  `tests/validate_manifests.py` is now a compatibility shim that loads the
+  real module by file path — kept only because `.github/workflows/ci.yml`
+  still invokes the old path and this agent's GitHub App token cannot push a
+  change to `.github/workflows/**` (see the linked issue for the exact
+  workflow diff a human/merge-tier agent needs to apply). Once that lands,
+  delete the shim and run everything via `scripts/` + `PYTHONPATH=scripts`.
 - **Standard library only, by design.** `ci.yml` has no `pip install` step; a
   dependency added here breaks the workflow rather than being auto-installed.
 - **URLs must be `https://`.** `_is_valid_url` is a literal
@@ -54,9 +58,11 @@ v0.10.6.
 ## Configured but unenforced
 
 ```bash
-python3 tests/validate_manifests.py     # vacuous while bucket/ is absent
-python3 -m unittest discover -s tests   # 15 tests
-ruff check .                            # config in ruff.toml; clean on main
+python3 scripts/validate_manifests.py             # vacuous while bucket/ is absent
+PYTHONPATH=scripts python3 -m unittest discover -s tests   # 19 tests; also runnable
+                                                   # the old way (no PYTHONPATH) via
+                                                   # the tests/ shim, for now
+ruff check .                                      # config in ruff.toml; clean on main
 ```
 
 > `ruff.toml` sets the lint rules and `codecov.yml` sets a 45% project coverage
