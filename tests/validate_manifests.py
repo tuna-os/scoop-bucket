@@ -3,8 +3,6 @@
 
 import runpy
 from pathlib import Path
-
-
 if __name__ == "__main__":
     runpy.run_path(
         Path(__file__).parents[1] / "scripts" / "validate_manifests.py",

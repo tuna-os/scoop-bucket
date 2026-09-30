@@ -1,0 +1,11 @@
+# Byte-code produced by the commands CONTRIBUTING.md asks contributors to run.
+__pycache__/
+*.py[cod]
+
+# Local caches and reports from the lint and coverage tooling this repository
+# configures in ruff.toml and codecov.yml.
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
