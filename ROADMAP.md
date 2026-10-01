@@ -1,20 +1,24 @@
 # Scoop Bucket Roadmap
 
-**Last updated:** 2026-08-28  
+**Last updated:** 2026-10-01  
 **Owner:** tuna-os  
 **Mission:** Give Windows users a verified, current package-manager path to
 TunaOS command-line tools.
 
 ## Current state
 
-The bucket is initialized but publishes no manifests. `bluefin-cli` is the
-first declared producer and has shipped Windows amd64 and arm64 archives with
-checksums since v0.10.6, but its release pipeline skips Scoop publication when
-the producer-local credential is unavailable.
+The bucket is initialized but still publishes no manifests. `bluefin-cli` is
+the first declared producer and has shipped Windows amd64 and arm64 archives
+with checksums since v0.10.6, now through v0.11.4, but its release pipeline
+still skips Scoop publication when the producer-local credential
+(`SCOOP_BUCKET_TOKEN`) is unavailable.
 
-The near-term objective is therefore not catalog growth. It is proving one
-complete install-and-update loop for `bluefin-cli`, with ownership and failure
-signals that can be reused safely by later producers.
+The ownership and validation contract (#4) and the launch tracking issue (#14)
+are both still open with no manifest, credential decision, or install
+verification landed. The near-term objective therefore remains unchanged from
+the prior checkpoint: not catalog growth, but proving one complete
+install-and-update loop for `bluefin-cli`, with ownership and failure signals
+that can be reused safely by later producers.
 
 ## Near term: launch the channel
 
