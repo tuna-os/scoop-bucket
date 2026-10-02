@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your help with the TunaOS Scoop bucket.
+Thank you for helping maintain the TunaOS Scoop bucket.
 
 ## Contribution scope
 
@@ -22,8 +22,8 @@ provide its own URL and hash.
 
 Hashes must use SHA-256 or SHA-512 — either a bare 64-character SHA-256 digest
 (Scoop's default) or a `sha256:`/`sha512:` prefixed digest of the matching
-length. The validator rejects MD5 and SHA-1 digests: both are collision-broken,
-so a pin with one of them does not verify the download.
+length. MD5 and SHA-1 digests are rejected. Both algorithms have collisions, so
+a pin using either does not verify the download.
 
 Follow the upstream tool's supported Windows architectures and use release
 artifacts from its official TunaOS repository. Do not add manifests for
@@ -34,12 +34,12 @@ third-party projects or unpublished artifacts.
 Run both checks from the repository root:
 
 ```console
-python3 tests/validate_manifests.py
+python3 scripts/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
 
 The first command validates every JSON file in `bucket/`; the second tests the
-validator itself. Both commands use the Python standard library and need no
+validator itself. Both use the Python standard library and require no
 additional packages.
 
 ## Pull requests

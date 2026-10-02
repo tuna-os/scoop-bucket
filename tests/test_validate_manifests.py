@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from validate_manifests import main, validate_manifest
+from scripts.validate_manifests import main, validate_manifest
 
 
 SHA256_A = "sha256:" + "a" * 64
@@ -184,4 +184,3 @@ class ManifestValidationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
