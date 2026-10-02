@@ -21,8 +21,8 @@ request, run the dependency-free validator and its unit tests from the
 repository root:
 
 ```console
-python3 tests/validate_manifests.py
-python3 -m unittest discover -s tests -v
+python3 scripts/validate_manifests.py
+PYTHONPATH=scripts python3 -m unittest discover -s tests -v
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for manifest requirements, contribution
