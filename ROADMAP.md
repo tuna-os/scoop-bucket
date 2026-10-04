@@ -1,29 +1,34 @@
 # Scoop Bucket Roadmap
 
-**Last updated:** 2026-08-28  
+**Last updated:** 2026-10-04  
 **Owner:** tuna-os  
 **Mission:** Give Windows users a verified, current package-manager path to
 TunaOS command-line tools.
 
-## Current state
+## Current state (Q4 2026 checkpoint)
 
-The bucket is initialized but publishes no manifests. `bluefin-cli` is the
-first declared producer and has shipped Windows amd64 and arm64 archives with
-checksums since v0.10.6, but its release pipeline skips Scoop publication when
-the producer-local credential is unavailable.
+**Status**: Channel launch gates defined (Q3 close); no manifests published yet.
+Producer readiness complete: `bluefin-cli` ships amd64/arm64 Windows archives 
+with checksums since v0.10.6. **Blocker**: credential provisioning and manifest 
+validation automation remain unstarted (5+ weeks since gate definition). No
+clear owner assigned; work is sequenced but not staffed.
 
-The near-term objective is therefore not catalog growth. It is proving one
-complete install-and-update loop for `bluefin-cli`, with ownership and failure
-signals that can be reused safely by later producers.
+The repository itself is CI-mature: manifest validator runs on PR, STE checks 
+pass, and least-privilege workflow permissions are set. The bucket is ready to
+receive submissions; the publication pipeline is not.
 
-## Near term: launch the channel
+Near-term objective: prove one complete install-and-update loop for 
+`bluefin-cli` with documented ownership and failure signals reusable by later 
+producers.
 
-| Outcome | Evidence required | Tracking | Status |
-| --- | --- | --- | --- |
-| Decide bucket publication ownership and credential model | Named owner, least-privilege write identity, and producer/consumer failure contract documented | #4 | Open |
-| Publish the first `bluefin-cli` manifest | Manifest on `main` targets the current stable Windows amd64 and arm64 assets and passes repository validation | #14 | Open |
-| Verify the user journey | Clean Windows amd64 run completes `scoop bucket add`, `scoop install bluefin-cli`, and `bluefin-cli --version` | #14 | Open |
-| Make release drift visible | A declared stable upstream release older than 24 hours without a matching manifest produces an owner-visible failure | #4, #14 | Open |
+## Near term: launch the channel (Q4 2026)
+
+| Outcome | Evidence required | Tracking | Status | Age |
+| --- | --- | --- | --- | --- |
+| **BLOCKER**: Name bucket publication owner and credential model | Owner identity, least-privilege token scope, and producer/consumer contract | #4 | 🔴 Unstarted | 36d |
+| Cut & publish first `bluefin-cli` manifest | Manifest on `main` passes validation, targets stable amd64+arm64 Windows archives | #14 | 🔴 Blocked on #4 | 36d |
+| Verify install + update | Clean amd64 Windows: `scoop bucket add`, `scoop install bluefin-cli`, `bluefin-cli --version` | #14 | 🔴 Blocked on manifest | 36d |
+| Publish release-drift detection | Upstream release older than 24 hours without matching manifest triggers owner alert | #4, #14 | 🔴 Unstarted | 36d |
 
 ## Mid term: operate a dependable channel
 
@@ -44,6 +49,18 @@ The channel is healthy when it has at least one installable package, every
 declared package matches an upstream stable release within 24 hours, and a
 failed or skipped publication cannot remain silently green.
 
+## Strategic risk
+
+The 36-day gap between gate definition and zero progress signals either a
+staffing shortage or a sequencing mismatch. Both are recoverable:
+
+- **Staffing**: the manifest author path is clear (see #14 for specifics);
+one owner + one afternoon → first manifest.
+- **Sequencing**: #4 ownership decision is genuinely unblocking — decide it,
+and #14 becomes a straightforward automation task.
+
+No architectural risk; no unknown unknowns. The risk is pure execution.
+
 ## Governance
 
 Roadmap status changes must link to verifiable artifacts such as a manifest,
@@ -52,4 +69,4 @@ Technical implementation belongs in the relevant issue or pull request; this
 document records user-visible outcomes and sequencing.
 
 ---
-*Maintained by the strategist agent (ACMM L6 — full mode).*
+*Maintained by the strategist agent (ACMM L6 — full mode). Last refresh: 2026-10-04.*
