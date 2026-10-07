@@ -1,29 +1,30 @@
 # Scoop Bucket Roadmap
 
-**Last updated:** 2026-08-28  
+**Last updated:** 2026-10-07  
 **Owner:** tuna-os  
 **Mission:** Give Windows users a verified, current package-manager path to
 TunaOS command-line tools.
 
 ## Current state
 
-The bucket is initialized but publishes no manifests. `bluefin-cli` is the
-first declared producer and has shipped Windows amd64 and arm64 archives with
-checksums since v0.10.6, but its release pipeline skips Scoop publication when
-the producer-local credential is unavailable.
+The bucket is initialized but publishes no manifests. **Launch is stalled 46 days** waiting for an architectural decision on publication ownership and credential model (#4, parked since 2026-10-01).
+
+`bluefin-cli` has shipped Windows amd64 and arm64 archives with checksums since v0.10.6, but its release pipeline skips Scoop publication when the producer-local credential is unavailable.
 
 The near-term objective is therefore not catalog growth. It is proving one
 complete install-and-update loop for `bluefin-cli`, with ownership and failure
 signals that can be reused safely by later producers.
 
-## Near term: launch the channel
+## Near term: **BLOCKED on #4 decision**
+
+**Status: All outcomes stalled 46 days. Awaiting maintainer decision on #4 (publication ownership model).**
 
 | Outcome | Evidence required | Tracking | Status |
 | --- | --- | --- | --- |
-| Decide bucket publication ownership and credential model | Named owner, least-privilege write identity, and producer/consumer failure contract documented | #4 | Open |
-| Publish the first `bluefin-cli` manifest | Manifest on `main` targets the current stable Windows amd64 and arm64 assets and passes repository validation | #14 | Open |
-| Verify the user journey | Clean Windows amd64 run completes `scoop bucket add`, `scoop install bluefin-cli`, and `bluefin-cli --version` | #14 | Open |
-| Make release drift visible | A declared stable upstream release older than 24 hours without a matching manifest produces an owner-visible failure | #4, #14 | Open |
+| **UNBLOCK: Decide publication ownership and credential model** | **Maintainer decision on #4 (A/B/C) — blocks all below** | **#4** | **🔴 PARKED (needs-direction since 2026-10-01)** |
+| Publish the first `bluefin-cli` manifest | Manifest on `main` targets the current stable Windows amd64 and arm64 assets and passes repository validation | #14 | 🔴 Blocked (depends on #4) |
+| Verify the user journey | Clean Windows amd64 run completes `scoop bucket add`, `scoop install bluefin-cli`, and `bluefin-cli --version` | #14 | 🔴 Blocked (depends on #4) |
+| Make release drift visible | A declared stable upstream release older than 24 hours without a matching manifest produces an owner-visible failure | #4, #14 | 🔴 Blocked (depends on #4) |
 
 ## Mid term: operate a dependable channel
 
