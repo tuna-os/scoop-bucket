@@ -1,18 +1,18 @@
 # TunaOS Scoop Bucket
 
-Scoop bucket for TunaOS tooling. Manifests are published from the upstream
-repos' release pipelines (e.g. GoReleaser).
+Scoop bucket for TunaOS tooling. The release pipelines of the upstream
+repositories (for example, GoReleaser) publish the manifests.
 
 ## Currently available
 
-No manifests are published yet — the bucket is initialized and waiting for
-tool releases to ship assets.
+This bucket has no manifests yet. It is ready, but no tool release has
+published a manifest to it.
 
 ## Pending
 
 - `bluefin-cli` (from [tuna-os/bluefin-cli](https://github.com/tuna-os/bluefin-cli))
-  is not yet published here — releases ship binary assets since v0.10.6, but
-  the GoReleaser Scoop publisher has not produced a manifest yet.
+  has no manifest here yet. Its releases ship binary assets since v0.10.6.
+  The GoReleaser Scoop publisher has not made a manifest for it yet.
 
 ## Contributing manifests
 
@@ -25,5 +25,5 @@ python3 tests/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for manifest requirements, contribution
-scope, and release-pipeline ownership guidance.
+See the [contribution guide](CONTRIBUTING.md) for manifest requirements,
+contribution scope, and release-pipeline ownership guidance.
