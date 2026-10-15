@@ -34,6 +34,7 @@ class ManifestValidationTests(unittest.TestCase):
     def test_valid_architecture_downloads(self):
         manifest = VALID | {
             "architecture": {
+                "32bit": {"url": "https://example.com/x86.zip", "hash": SHA256_B},
                 "64bit": {"url": "https://example.com/x64.zip", "hash": SHA256_A},
                 "arm64": {"url": "https://example.com/arm64.zip", "hash": SHA512},
             }
@@ -42,6 +43,29 @@ class ManifestValidationTests(unittest.TestCase):
         manifest.pop("hash")
         with tempfile.TemporaryDirectory() as directory:
             self.assertEqual(validate_manifest(self.write_manifest(Path(directory), manifest)), [])
+
+    def test_rejects_unsupported_architecture_names(self):
+        for architecture in ("amd64", "x86_64", "aarch64"):
+            with self.subTest(architecture=architecture), tempfile.TemporaryDirectory() as directory:
+                manifest = VALID | {
+                    "architecture": {
+                        architecture: {
+                            "url": "https://example.com/tool.zip",
+                            "hash": SHA256_A,
+                        }
+                    }
+                }
+                manifest.pop("url")
+                manifest.pop("hash")
+
+                errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+
+                self.assertTrue(
+                    any(
+                        f"architecture.{architecture}: unsupported architecture" in error
+                        for error in errors
+                    )
+                )
 
     def test_reports_invalid_json(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -184,4 +208,3 @@ class ManifestValidationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
