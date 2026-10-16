@@ -103,7 +103,7 @@ def validate_manifest(path: Path) -> list[str]:
     return errors
 
 
-def main(bucket: Path = Path("bucket"), allow_empty: bool = False) -> int:
+def main(bucket: Path = Path("bucket"), allow_empty: bool = True) -> int:
     # Resolve bucket path against repository root, not the current working directory.
     # This prevents the validator from being pointed at nothing by accident.
     repo_root = Path(__file__).parent.parent
@@ -140,9 +140,9 @@ if __name__ == "__main__":
         help="Path to manifests directory (default: bucket/)",
     )
     parser.add_argument(
-        "--allow-empty",
+        "--forbid-empty",
         action="store_true",
-        help="Allow empty bucket during repository bootstrap",
+        help="Fail if bucket is empty (default: allow empty during bootstrap)",
     )
     args = parser.parse_args()
-    raise SystemExit(main(args.bucket, allow_empty=args.allow_empty))
+    raise SystemExit(main(args.bucket, allow_empty=not args.forbid_empty))

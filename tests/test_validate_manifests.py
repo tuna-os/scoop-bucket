@@ -191,18 +191,21 @@ class ManifestValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             bucket = Path(directory) / "bucket"
             bucket.mkdir()
-            self.assertEqual(main(bucket, allow_empty=True), 0)
+            # Default allow_empty=True allows bootstrap phase
+            self.assertEqual(main(bucket), 0)
 
-    def test_empty_bucket_fails_without_allow_empty_flag(self):
+    def test_empty_bucket_fails_with_forbid_empty_flag(self):
         with tempfile.TemporaryDirectory() as directory:
             bucket = Path(directory) / "bucket"
             bucket.mkdir()
+            # Explicit forbid_empty=False (via allow_empty=False) fails
             self.assertEqual(main(bucket, allow_empty=False), 1)
 
     def test_missing_bucket_directory_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             bucket = Path(directory) / "nonexistent" / "bucket"
-            self.assertEqual(main(bucket, allow_empty=False), 1)
+            # Missing directory always fails regardless of allow_empty
+            self.assertEqual(main(bucket, allow_empty=True), 1)
 
     def test_main_validates_manifests_in_bucket_directory(self):
         with tempfile.TemporaryDirectory() as directory:
