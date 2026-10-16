@@ -189,7 +189,20 @@ class ManifestValidationTests(unittest.TestCase):
 
     def test_empty_bucket_is_valid_during_repository_bootstrap(self):
         with tempfile.TemporaryDirectory() as directory:
-            self.assertEqual(main(Path(directory)), 0)
+            bucket = Path(directory) / "bucket"
+            bucket.mkdir()
+            self.assertEqual(main(bucket, allow_empty=True), 0)
+
+    def test_empty_bucket_fails_without_allow_empty_flag(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bucket = Path(directory) / "bucket"
+            bucket.mkdir()
+            self.assertEqual(main(bucket, allow_empty=False), 1)
+
+    def test_missing_bucket_directory_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bucket = Path(directory) / "nonexistent" / "bucket"
+            self.assertEqual(main(bucket, allow_empty=False), 1)
 
     def test_main_validates_manifests_in_bucket_directory(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -204,6 +217,29 @@ class ManifestValidationTests(unittest.TestCase):
             bucket.mkdir()
             (bucket / "bad.json").write_text("{}", encoding="utf-8")
             self.assertEqual(main(bucket), 1)
+
+    def test_validator_can_fail_on_known_bad_manifest(self):
+        """Fixture test: ensure validator reports errors on invalid manifests."""
+        bad_manifests = [
+            ({}, "missing required fields"),
+            ({"version": "1.0", "description": "Bad", "homepage": "https://example.com", "license": "MIT"}, "missing url/hash/bin"),
+            (
+                {
+                    "version": "1.0",
+                    "description": "Bad",
+                    "homepage": "https://example.com",
+                    "license": "MIT",
+                    "url": "http://example.com/tool.zip",  # Invalid HTTP scheme
+                    "hash": SHA256_A,
+                    "bin": "tool.exe",
+                },
+                "invalid http scheme",
+            ),
+        ]
+        for manifest, test_case in bad_manifests:
+            with self.subTest(test_case=test_case), tempfile.TemporaryDirectory() as directory:
+                errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+                self.assertGreater(len(errors), 0, f"Expected errors for {test_case}")
 
 
 if __name__ == "__main__":
