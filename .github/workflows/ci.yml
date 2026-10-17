@@ -18,6 +18,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint code and manifests
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/ruff-action@v1
+        with:
+          args: check .
+
   validate:
     name: Validate manifests
     runs-on: ubuntu-26.04
@@ -27,10 +36,23 @@ jobs:
         with:
           python-version: '3.x'
 
-      # Both commands are the ones CONTRIBUTING.md asks contributors to run,
-      # standard library only — no pip install step by design.
+      # Both test commands are the ones CONTRIBUTING.md asks contributors to
+      # run. Only the coverage gate below needs anything beyond the standard
+      # library, so only it gets a pip install step.
       - name: Validate published manifests
         run: python3 tests/validate_manifests.py
 
       - name: Test the validator
         run: python3 -m unittest discover -s tests -v
+
+      # codecov.yml declares a 45% project target, but neither this repo nor
+      # the org has a CODECOV_TOKEN secret, so a codecov.io upload cannot
+      # authenticate. Enforce the target here with coverage.py instead; add
+      # the upload step once a token exists (see #66).
+      - name: Install coverage
+        run: pip install coverage
+
+      - name: Enforce coverage target
+        run: |
+          coverage run -m unittest discover -s tests
+          coverage report --fail-under=45
