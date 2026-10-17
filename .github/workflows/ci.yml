@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/ruff-action@v1
+      - uses: astral-sh/ruff-action@v4.1.0
         with:
           args: check .
 
