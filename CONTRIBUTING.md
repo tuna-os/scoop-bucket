@@ -44,16 +44,18 @@ third-party projects or unpublished artifacts.
 
 ## Validate locally
 
-Run both checks from the repository root:
+Install Ruff before running the checks; use the [official installation
+instructions](https://docs.astral.sh/ruff/installation/) for your platform.
+From the repository root, run all three checks:
 
 ```console
+ruff check .
 python3 tests/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
 
-The first command validates every JSON file in `bucket/`; the second tests the
-validator itself. Both commands use the Python standard library and need no
-additional packages.
+Ruff runs the same lint command as CI. The validator and its unit tests use
+only the Python standard library; Ruff is the only additional local tool.
 
 ## Pull requests
 
