@@ -103,11 +103,24 @@ def validate_manifest(path: Path) -> list[str]:
     return errors
 
 
-def main(bucket: Path = Path("bucket")) -> int:
-    manifests = sorted(bucket.glob("*.json")) if bucket.is_dir() else []
+def main(bucket: Path = Path("bucket"), allow_empty: bool = True) -> int:
+    # Resolve bucket path against repository root, not the current working directory.
+    # This prevents the validator from being pointed at nothing by accident.
+    repo_root = Path(__file__).parent.parent
+    bucket = bucket if bucket.is_absolute() else repo_root / bucket
+    
+    if not bucket.is_dir():
+        print(f"Error: bucket directory not found: {bucket}", file=sys.stderr)
+        return 1
+    
+    manifests = sorted(bucket.glob("*.json"))
     if not manifests:
-        print("No manifests published yet; nothing to validate.")
-        return 0
+        if allow_empty:
+            print("No manifests published yet; nothing to validate.")
+            return 0
+        else:
+            print(f"Error: no manifests found in {bucket}", file=sys.stderr)
+            return 1
 
     errors = [error for path in manifests for error in validate_manifest(path)]
     if errors:
@@ -118,4 +131,18 @@ def main(bucket: Path = Path("bucket")) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate Scoop manifests")
+    parser.add_argument(
+        "--bucket",
+        type=Path,
+        default=Path("bucket"),
+        help="Path to manifests directory (default: bucket/)",
+    )
+    parser.add_argument(
+        "--forbid-empty",
+        action="store_true",
+        help="Fail if bucket is empty (default: allow empty during bootstrap)",
+    )
+    args = parser.parse_args()
+    raise SystemExit(main(args.bucket, allow_empty=not args.forbid_empty))
