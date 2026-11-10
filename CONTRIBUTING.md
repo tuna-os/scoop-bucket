@@ -44,7 +44,7 @@ third-party projects or unpublished artifacts.
 
 ## Validate locally
 
-Install Ruff before running the checks; use the [official installation
+Install Ruff before you run the checks; use the [official installation
 instructions](https://docs.astral.sh/ruff/installation/) for your platform.
 From the repository root, run all three checks:
 
