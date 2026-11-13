@@ -44,22 +44,24 @@ v0.10.6.
 - **It lives in `tests/`** (`tests/validate_manifests.py`), which is unusual —
   it is both the tool CI runs against `bucket/` and the subject of
   `tests/test_validate_manifests.py`.
-- **Standard library only, by design.** `ci.yml` has no `pip install` step; a
-  dependency added here breaks the workflow rather than being auto-installed.
+- **Standard library for validator.** The validator and its unit tests use only
+  the Python standard library. CI separately installs coverage for its coverage
+  gate; keep dependencies out of the validator itself.
 - **URLs must be `https://`.** `_is_valid_url` is a literal
   `url.startswith("https://")` — plain `http` is rejected, not warned about.
 - Architecture-specific downloads are validated per architecture, and paired
   `url`/`hash` lists must have equal length.
 
-## Configured but unenforced
+## Configured checks
 
 ```bash
 python3 tests/validate_manifests.py     # vacuous while bucket/ is absent
-python3 -m unittest discover -s tests   # 15 tests
-ruff check .                            # config in ruff.toml; clean on main
+python3 -m unittest discover -s tests   # validator unit tests
+ruff check .                            # lint configured in ruff.toml
 ```
 
-> `ruff.toml` sets the lint rules and `codecov.yml` sets a 45% project coverage
-> target, but **`ci.yml` runs neither** — no ruff step, no coverage upload. The
-> tree happens to be ruff-clean right now, so wiring it in is cheap; the
-> coverage gate cannot report at all until something uploads coverage.
+`ruff.toml` sets the lint rules and `codecov.yml` records a 45% project
+coverage target. `ci.yml` runs Ruff and enforces that target with coverage.py;
+it does not upload results because neither this repository nor the
+organization has a `CODECOV_TOKEN` secret. The tree is currently Ruff-clean,
+but local `ruff check .` still matters because it mirrors the CI lint gate.
