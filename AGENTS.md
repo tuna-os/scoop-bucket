@@ -9,7 +9,7 @@ Human docs: [`README.md`](README.md), [`CONTRIBUTING.md`](CONTRIBUTING.md)
 ## The bucket is empty, and that makes CI vacuous
 
 `bucket/` holds only `.gitkeep`. Not one manifest has been published yet.
-`main()` in `tests/validate_manifests.py` resolves `bucket/` against the
+`main()` in `scripts/validate_manifests.py` resolves `bucket/` against the
 repository root, not the current directory, and handles the two cases
 differently:
 
@@ -44,9 +44,11 @@ v0.10.6.
 
 ## Validator conventions worth keeping
 
-- **It lives in `tests/`** (`tests/validate_manifests.py`), which is unusual —
-  it is both the tool CI runs against `bucket/` and the subject of
-  `tests/test_validate_manifests.py`.
+- **It lives in `scripts/`** (`scripts/validate_manifests.py`). It is the tool
+  that checks `bucket/`, and `tests/test_validate_manifests.py` tests it.
+  `tests/validate_manifests.py` is only the old path: it runs the script with
+  the same arguments, because `ci.yml` still calls that path. Do not add code
+  there.
 - **Standard library for validator.** The validator and its unit tests use only
   the Python standard library. CI separately installs coverage for its coverage
   gate; keep dependencies out of the validator itself.
@@ -58,7 +60,7 @@ v0.10.6.
 ## Configured checks
 
 ```bash
-python3 tests/validate_manifests.py     # vacuous while bucket/ is empty
+python3 scripts/validate_manifests.py   # vacuous while bucket/ is empty
 python3 -m unittest discover -s tests   # validator unit tests
 ruff check .                            # lint configured in ruff.toml
 ```
