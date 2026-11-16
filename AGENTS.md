@@ -70,3 +70,19 @@ coverage target. `ci.yml` runs Ruff and enforces that target with coverage.py;
 it does not upload results because neither this repository nor the
 organization has a `CODECOV_TOKEN` secret. The tree is currently Ruff-clean,
 but local `ruff check .` still matters because it mirrors the CI lint gate.
+
+`ci.yml` is not the only gate. Two more workflows check pull requests:
+
+- `actions-security.yml` runs on every PR: `gh actions-lock --verify` against
+  `.github/workflows/actions.lock`, and `zizmor` over the workflows. A
+  workflow change that adds or moves a `uses:` pin must update `actions.lock`
+  in the same PR.
+- `ste.yml` ("Prose") runs on `**.md`, `**.mdx`, `.ste-budget` and itself. It
+  calls the shared `tuna-os/.github` STE linter, which checks `README.md` and
+  `CONTRIBUTING.md` (not `AGENTS.md` or `ROADMAP.md`) against `.ste-budget`.
+  The budget is `0`, so any new finding in those files fails the PR. Reproduce
+  from this repo's root with a `tuna-os/.github` checkout:
+  `node <path-to-.github>/.github/actions/ste-lint/ste-lint.mjs --summary`.
+
+`drop-bot-review-requests.yml` removes auto-requested reviewers from
+bot-authored PRs. It does not check content.
