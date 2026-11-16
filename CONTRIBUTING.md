@@ -57,6 +57,13 @@ python3 -m unittest discover -s tests -v
 Ruff runs the same lint command as CI. The validator and its unit tests use
 only the Python standard library; Ruff is the only additional local tool.
 
+Two other CI checks can fail a pull request. The `actions-security` workflow
+verifies `.github/workflows/actions.lock` and scans the workflows with zizmor.
+If you change a `uses:` line in a workflow, update `actions.lock` in the same
+pull request. The `Prose` workflow checks `README.md` and `CONTRIBUTING.md`
+against Simplified Technical English. The budget in `.ste-budget` is `0`, so
+one new STE problem in these files makes the check fail.
+
 ## Pull requests
 
 Keep each pull request focused on one package or one documentation concern. In
