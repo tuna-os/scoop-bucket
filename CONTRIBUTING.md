@@ -50,7 +50,7 @@ From the repository root, run all three checks:
 
 ```console
 ruff check .
-python3 tests/validate_manifests.py
+python3 scripts/validate_manifests.py
 python3 -m unittest discover -s tests -v
 ```
 
