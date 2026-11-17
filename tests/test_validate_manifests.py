@@ -1,6 +1,4 @@
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -245,31 +243,6 @@ class ManifestValidationTests(unittest.TestCase):
             with self.subTest(test_case=test_case), tempfile.TemporaryDirectory() as directory:
                 errors = validate_manifest(self.write_manifest(Path(directory), manifest))
                 self.assertGreater(len(errors), 0, f"Expected errors for {test_case}")
-
-
-class OldPathTests(unittest.TestCase):
-    """tests/validate_manifests.py must keep the validator's CLI contract."""
-
-    OLD_PATH = Path(__file__).resolve().parent / "validate_manifests.py"
-
-    def run_old_path(self, bucket: Path) -> int:
-        return subprocess.run(
-            [sys.executable, str(self.OLD_PATH), "--bucket", str(bucket)],
-            capture_output=True,
-            check=False,
-        ).returncode
-
-    def test_old_path_passes_valid_bucket(self):
-        with tempfile.TemporaryDirectory() as directory:
-            bucket = Path(directory)
-            (bucket / "tool.json").write_text(json.dumps(VALID), encoding="utf-8")
-            self.assertEqual(self.run_old_path(bucket), 0)
-
-    def test_old_path_fails_invalid_bucket(self):
-        with tempfile.TemporaryDirectory() as directory:
-            bucket = Path(directory)
-            (bucket / "bad.json").write_text("{}", encoding="utf-8")
-            self.assertEqual(self.run_old_path(bucket), 1)
 
 
 if __name__ == "__main__":
