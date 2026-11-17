@@ -44,7 +44,7 @@ jobs:
       # run. Only the coverage gate below needs anything beyond the standard
       # library, so only it gets a pip install step.
       - name: Validate published manifests
-        run: python3 tests/validate_manifests.py
+        run: python3 scripts/validate_manifests.py
 
       - name: Test the validator
         run: python3 -m unittest discover -s tests -v

@@ -46,9 +46,8 @@ v0.10.6.
 
 - **It lives in `scripts/`** (`scripts/validate_manifests.py`). It is the tool
   that checks `bucket/`, and `tests/test_validate_manifests.py` tests it.
-  `tests/validate_manifests.py` is only the old path: it runs the script with
-  the same arguments, because `ci.yml` still calls that path. Do not add code
-  there.
+  The old `tests/validate_manifests.py` shim is gone; `ci.yml` calls the
+  `scripts/` path directly.
 - **Standard library for validator.** The validator and its unit tests use only
   the Python standard library. CI separately installs coverage for its coverage
   gate; keep dependencies out of the validator itself.
