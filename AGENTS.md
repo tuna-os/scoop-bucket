@@ -31,16 +31,29 @@ emptied bucket fails.
 
 ## This is a publish target, not a source of truth
 
-Manifests are meant to be written by the producing tool's release pipeline
-(GoReleaser in the upstream repo), not by hand here. `CONTRIBUTING.md` says a
-hand edit to a generated manifest is overwritten by the next release, and that
-is the failure mode to avoid: the fix for a wrong version or hash almost always
-belongs in the upstream `.goreleaser.yaml`, not in this repo.
+The bucket owns its publication (maintainer ruling on #4). Manifests are
+generated from the producer's release, not written by hand:
+`scripts/update_manifest.py` reads the latest stable `bluefin-cli` release
+through the public GitHub API, takes the Windows amd64/arm64 archive digests
+from that release's `checksums.txt`, writes `bucket/bluefin-cli.json`
+(with `checkver`/`autoupdate`), and runs the validator on the result. It needs
+no cross-repository credential; `GITHUB_TOKEN`, when set, only raises the API
+rate limit. A release missing an archive or its digest is an error, never an
+unpinned download.
 
-`bluefin-cli` is the first declared producer and is still unpublished — its
-release job skips Scoop publication when the producer-local credential is
-absent, which is why the bucket is empty despite Windows assets existing since
-v0.10.6.
+`python3 scripts/update_manifest.py --check-freshness` writes nothing and
+exits 1 when the committed manifest is behind a release older than 24 hours
+(`--max-lag-hours` changes the window). That is the ROADMAP's "release drift
+is visible" signal.
+
+The scheduled workflow that runs both modes and opens the manifest PR is
+tracked on #4; until it lands, run the generator by hand and open the PR
+yourself. A hand edit to `bucket/bluefin-cli.json` is overwritten by the next
+run, so fix the generator or the upstream release instead.
+
+`bluefin-cli`'s `.goreleaser.yaml` still declares a `scoops:` publisher that
+skips itself while its producer-local `SCOOP_BUCKET_TOKEN` is absent. It is a
+dormant second writer; do not configure that token.
 
 ## Validator conventions worth keeping
 
