@@ -187,6 +187,91 @@ class ManifestValidationTests(unittest.TestCase):
             errors = validate_manifest(self.write_manifest(Path(directory), manifest_invalid_arch_download))
             self.assertTrue(any("must be an object" in error for error in errors))
 
+    def test_validates_top_level_download_next_to_architecture(self):
+        # Scoop falls back to the top-level url for an architecture the
+        # manifest does not list, so that url needs the same checks.
+        per_arch = {"64bit": {"url": "https://example.com/x64.zip", "hash": SHA256_A}}
+        cases = {
+            "valid https URL": {"url": "http://example.com/x86.zip", "hash": SHA256_B},
+            "missing hash": {"url": "https://example.com/x86.zip"},
+            "is not accepted": {"url": "https://example.com/x86.zip", "hash": "md5:" + "a" * 32},
+            "missing url": {"hash": SHA256_B},
+        }
+        for expected, top_level in cases.items():
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as directory:
+                manifest = {k: v for k, v in VALID.items() if k not in ("url", "hash")}
+                manifest |= {"architecture": per_arch} | top_level
+                errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+                self.assertTrue(any(expected in error for error in errors), errors)
+
+    def test_accepts_valid_top_level_download_next_to_architecture(self):
+        manifest = VALID | {
+            "architecture": {"64bit": {"url": "https://example.com/x64.zip", "hash": SHA256_B}}
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(validate_manifest(self.write_manifest(Path(directory), manifest)), [])
+
+    def test_rejects_keys_scoop_reads_in_another_case(self):
+        # PowerShell reads "Architecture" as "architecture"; the validator must
+        # not accept a manifest whose download fields it cannot see.
+        unchecked = {"64bit": {"url": "http://example.com/other.zip"}}
+        cases = {
+            "Architecture": VALID | {"Architecture": unchecked},
+            "ARCHITECTURE": VALID | {"ARCHITECTURE": {"amd64": unchecked["64bit"]}},
+            "arch\u0131tecture": VALID | {"arch\u0131tecture": unchecked},
+            "URL": {k: v for k, v in VALID.items() if k not in ("url", "hash")}
+            | {
+                "architecture": {
+                    "64bit": {
+                        "url": "https://example.com/x64.zip",
+                        "hash": SHA256_A,
+                        "URL": "http://example.com/other.zip",
+                    }
+                }
+            },
+        }
+        for key, manifest in cases.items():
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
+                errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+                self.assertTrue(
+                    any(f"key '{key}' must be lower-case ASCII" in error for error in errors),
+                    errors,
+                )
+
+    def test_rejects_versions_that_turn_off_the_hash_check(self):
+        # Scoop does not verify downloads when the version is "nightly", in
+        # any letter case, so a manifest with a correct hash would install
+        # unverified.
+        cases = {
+            "nightly": "skip the hash check",
+            "Nightly": "skip the hash check",
+            "NIGHTLY": "skip the hash check",
+            "n\u0131ghtly": "only ASCII",
+            "nightly\u200b": "only ASCII",
+            "1.0 beta": "only ASCII",
+        }
+        for version, expected in cases.items():
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                manifest = VALID | {"version": version}
+                errors = validate_manifest(self.write_manifest(Path(directory), manifest))
+                self.assertTrue(any(expected in error for error in errors), errors)
+
+    def test_accepts_release_and_dated_nightly_versions(self):
+        for version in ("0.10.6", "1.2.3-rc.1+build_5", "nightly-20261118"):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                manifest = VALID | {"version": version}
+                self.assertEqual(validate_manifest(self.write_manifest(Path(directory), manifest)), [])
+
+    def test_main_validates_manifests_scoop_can_find(self):
+        # Scoop searches the bucket recursively and Windows ignores suffix case.
+        for relative in ("nested/bad.json", "bad.JSON"):
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                bucket = Path(directory) / "bucket"
+                (bucket / relative).parent.mkdir(parents=True)
+                self.write_manifest(bucket, VALID)
+                (bucket / relative).write_text("{}", encoding="utf-8")
+                self.assertEqual(main(bucket), 1)
+
     def test_empty_bucket_is_valid_during_repository_bootstrap(self):
         with tempfile.TemporaryDirectory() as directory:
             bucket = Path(directory) / "bucket"
