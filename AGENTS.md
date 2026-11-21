@@ -47,9 +47,10 @@ exits 1 when the committed manifest is behind a release older than 24 hours
 is visible" signal.
 
 The scheduled workflow that runs both modes and opens the manifest PR is
-tracked on #4; until it lands, run the generator by hand and open the PR
-yourself. A hand edit to `bucket/bluefin-cli.json` is overwritten by the next
-run, so fix the generator or the upstream release instead.
+tracked on #110 (#4 closed when #105 merged, before the workflow landed);
+until it lands, run the generator by hand and open the PR yourself. A hand
+edit to `bucket/bluefin-cli.json` is overwritten by the next run, so fix the
+generator or the upstream release instead.
 
 `bluefin-cli`'s `.goreleaser.yaml` still declares a `scoops:` publisher that
 skips itself while its producer-local `SCOOP_BUCKET_TOKEN` is absent. It is a
