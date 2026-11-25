@@ -11,6 +11,9 @@ workflows:
         - 'actions/setup-python@v7.1.0'
         - 'astral-sh/ruff-action@v4.1.0'
     '.github/workflows/drop-bot-review-requests.yml': []
+    '.github/workflows/publish-manifests.yml':
+        - 'actions/checkout@v7.0.1'
+        - 'actions/setup-python@v7.1.0'
     '.github/workflows/ste.yml': []
 dependencies:
     'actions/checkout@v7.0.1':
