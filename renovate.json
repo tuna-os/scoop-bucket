@@ -5,9 +5,10 @@
   ],
   "packageRules": [
     {
-      "description": "Wait 7 days before taking a new action release (supply-chain cooldown).",
+      "description": "Wait 7 days before taking a new action or CI tool release (supply-chain cooldown).",
       "matchManagers": [
-        "github-actions"
+        "github-actions",
+        "pip_requirements"
       ],
       "minimumReleaseAge": "7 days"
     }

@@ -54,7 +54,7 @@ jobs:
       # authenticate. Enforce the target here with coverage.py instead; add
       # the upload step once a token exists (see #66).
       - name: Install coverage
-        run: pip install coverage==7.17.3
+        run: pip install -r requirements-ci.txt
 
       - name: Enforce coverage target
         run: |
