@@ -109,24 +109,47 @@ def build_manifest(release: dict, checksums: dict[str, str]) -> dict:
     }
 
 
-def freshness_error(
-    manifest_path: Path, release: dict, now: datetime, max_lag: timedelta
-) -> str | None:
-    """Return why the manifest is stale, or None when it is fresh enough."""
-    version = release_version(release)
-    published = datetime.fromisoformat(release["published_at"].replace("Z", "+00:00"))
+def unpublished_releases(manifest_path: Path, releases: list[dict]) -> list[dict]:
+    """Return the releases newer than the committed manifest, newest first.
+
+    `releases` is newest first. Walk until the committed version is found; a
+    missing manifest (or a version beyond the list) leaves every release.
+    """
     current = None
     if manifest_path.is_file():
         current = json.loads(manifest_path.read_text(encoding="utf-8")).get("version")
-    if current == version:
+    missing = []
+    for release in releases:
+        if release_version(release) == current:
+            break
+        missing.append(release)
+    return missing
+
+
+def freshness_error(
+    manifest_path: Path, releases: list[dict], now: datetime, max_lag: timedelta
+) -> str | None:
+    """Return why the manifest is stale, or None when it is fresh enough.
+
+    Lag is measured from the oldest release the manifest is missing, so a
+    producer that releases more often than the window cannot hide drift.
+    """
+    missing = unpublished_releases(manifest_path, releases)
+    if not missing:
         return None
+    oldest = missing[-1]
+    published = datetime.fromisoformat(oldest["published_at"].replace("Z", "+00:00"))
     lag = now - published
     if lag <= max_lag:
         return None
     hours = int(lag.total_seconds() // 3600)
+    current = None
+    if manifest_path.is_file():
+        current = json.loads(manifest_path.read_text(encoding="utf-8")).get("version")
     return (
         f"{manifest_path.name} is at {current or 'nothing'}, but {PRODUCER} "
-        f"released {version} {hours}h ago (limit {int(max_lag.total_seconds() // 3600)}h)"
+        f"released {release_version(oldest)} {hours}h ago (limit "
+        f"{int(max_lag.total_seconds() // 3600)}h); {len(missing)} release(s) unpublished"
     )
 
 
@@ -142,6 +165,13 @@ def _fetch(url: str, accept: str) -> bytes:
 def fetch_latest_release() -> dict:
     url = f"https://api.github.com/repos/{PRODUCER}/releases/latest"
     return json.loads(_fetch(url, "application/vnd.github+json"))
+
+
+def fetch_stable_releases() -> list[dict]:
+    """Stable releases, newest first (one page of the releases list)."""
+    url = f"https://api.github.com/repos/{PRODUCER}/releases?per_page=100"
+    releases = json.loads(_fetch(url, "application/vnd.github+json"))
+    return [r for r in releases if not r.get("draft") and not r.get("prerelease")]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -166,19 +196,27 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        release = fetch_latest_release()
         if args.check_freshness:
+            releases = fetch_stable_releases()
             error = freshness_error(
                 args.output,
-                release,
+                releases,
                 datetime.now(timezone.utc),
                 timedelta(hours=args.max_lag_hours),
             )
             if error:
                 print(f"Error: {error}", file=sys.stderr)
                 return 1
-            print(f"{args.output.name} is current with {PRODUCER} {release['tag_name']}.")
+            missing = unpublished_releases(args.output, releases)
+            if missing:
+                print(
+                    f"{args.output.name} is behind {PRODUCER} by {len(missing)} "
+                    f"release(s), inside the {args.max_lag_hours:g}h window."
+                )
+            else:
+                print(f"{args.output.name} is current with {PRODUCER} {releases[0]['tag_name']}.")
             return 0
+        release = fetch_latest_release()
         checksums_text = _fetch(asset_url(release, CHECKSUMS_ASSET), "application/octet-stream")
         manifest = build_manifest(release, parse_checksums(checksums_text.decode("utf-8")))
     except PublicationError as error:
