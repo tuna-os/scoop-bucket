@@ -79,12 +79,14 @@ class BuildManifestTests(unittest.TestCase):
 
 
 class FreshnessTests(unittest.TestCase):
-    def check(self, current_version, age):
+    def check(self, current_version, age, releases=None):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bluefin-cli.json"
             if current_version is not None:
                 path.write_text(json.dumps({"version": current_version}), encoding="utf-8")
-            return freshness_error(path, release(), PUBLISHED + age, timedelta(hours=24))
+            return freshness_error(
+                path, releases or [release()], PUBLISHED + age, timedelta(hours=24)
+            )
 
     def test_matching_version_is_fresh_however_old(self):
         self.assertIsNone(self.check("1.2.3", timedelta(days=30)))
@@ -99,6 +101,18 @@ class FreshnessTests(unittest.TestCase):
 
     def test_missing_manifest_past_window_fails(self):
         self.assertIn("at nothing", self.check(None, timedelta(hours=25)))
+
+    def test_old_unpublished_release_fails_despite_fresh_latest(self):
+        older = release(tag_name="v1.2.2", published_at="2026-11-15T12:00:00Z")
+        newest = release(published_at="2026-11-18T10:00:00Z")
+        error = self.check(None, timedelta(hours=0), [newest, older])
+        self.assertIn("1.2.2", error)
+        self.assertIn("2 release(s)", error)
+
+    def test_only_fresh_release_unpublished_is_tolerated(self):
+        older = release(tag_name="v1.2.2", published_at="2026-11-15T12:00:00Z")
+        newest = release(published_at="2026-11-18T10:00:00Z")
+        self.assertIsNone(self.check("1.2.2", timedelta(hours=0), [newest, older]))
 
 
 if __name__ == "__main__":
