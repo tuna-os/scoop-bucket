@@ -1,3 +1,3 @@
 # Tools that CI installs from PyPI, each at one exact version.
 # Renovate updates the versions (see renovate.json).
-coverage==7.17.3
+coverage==7.17.4
